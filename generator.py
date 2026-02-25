@@ -6,6 +6,7 @@ import glob
 
 from dexes import __get_stonfi_assets, __get_dedust_assets, __get_backed_assets, update_stonfi_routers
 from utlis import normalize_address
+from urllib.parse import urlparse
 
 EXPLORER_JETTONS = "https://tonviewer.com/"
 EXPLORER_ACCOUNTS = "https://tonviewer.com/"
@@ -80,8 +81,10 @@ def merge_jettons():
             raise Exception(f"invalid keys {set(j.keys()) - ALLOWED_KEYS} in {j.get('name')}")
         if len(set(j.keys()) & {"name", "symbol", "address"}) < 3:
             raise Exception(f"name, symbol, and address are required in {j.get('name')}")
-        if 'image' in j and j['image'].startswith('https://cache.tonapi.io'):
-            raise Exception(f"don't use cache.tonapi.io as image source in {j.get('name')}")
+        if 'image' in j:
+            parsed_image_url = urlparse(j['image'])
+            if parsed_image_url.hostname == 'cache.tonapi.io':
+                raise Exception(f"don't use cache.tonapi.io as image source in {j.get('name')}")
 
         normalized = normalize_address(j["address"], True)
         if normalized in already_exist_address:
